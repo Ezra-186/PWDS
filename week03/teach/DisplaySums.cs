@@ -23,11 +23,28 @@
 
     /// <summary>
     /// Display pairs of numbers (no duplicates should be displayed) that sum to
-    /// 10 using a set in O(n) time.  We are assuming that there are no duplicates
+    /// 10 using a set in O(n) time. We are assuming that there are no duplicates
     /// in the list.
     /// </summary>
     /// <param name="numbers">array of integers</param>
-    private static void DisplaySumPairs(int[] numbers) {
-        // TODO Problem 2 - This should print pairs of numbers in the given array
+    private static void DisplaySumPairs(int[] numbers)
+    {
+        // Set to remember the numbers we have already processed
+        var seenNumbers = new HashSet<int>();
+
+        // Walk through the array one time
+        foreach (var number in numbers)
+        {
+            // Compute the partner that would add up to 10 with this number
+            var needed = 10 - number;
+
+            // If that partner was seen earlier, we have a complete pair
+            if (seenNumbers.Contains(needed))
+                Console.WriteLine($"{number} {needed}");
+
+            // Add this number so future values can pair with it
+            seenNumbers.Add(number);
+        }
+        // Each pair is printed once, when we reach the second number of the pair
     }
 }
