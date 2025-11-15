@@ -1,4 +1,7 @@
 using System.Text.Json;
+using System.Collections.Generic;
+using System.IO;
+using System.Net.Http;
 
 public static class SetsAndMaps
 {
@@ -22,7 +25,36 @@ public static class SetsAndMaps
     public static string[] FindPairs(string[] words)
     {
         // TODO Problem 1 - ADD YOUR CODE HERE
-        return [];
+        var seen = new HashSet<string>();
+        var result = new List<string>();
+
+        foreach (var word in words)
+        {
+            if (string.IsNullOrEmpty(word) || word.Length != 2)
+            {
+                continue;
+            }
+
+            // Skip words where both letters are the same
+            if (word[0] == word[1])
+            {
+                seen.Add(word);
+                continue;
+            }
+
+            char[] reversedChars = { word[1], word[0] };
+            string reversed = new string(reversedChars);
+
+            // If we have already seen the reverse, we found a pair
+            if (seen.Contains(reversed))
+            {
+                result.Add($"{word} & {reversed}");
+            }
+
+            seen.Add(word);
+        }
+
+        return result.ToArray();
     }
 
     /// <summary>
@@ -43,6 +75,28 @@ public static class SetsAndMaps
         {
             var fields = line.Split(",");
             // TODO Problem 2 - ADD YOUR CODE HERE
+
+            if (fields.Length < 4)
+            {
+                continue;
+            }
+
+            // Degree is in column 4, trim to remove spaces
+            string degree = fields[3].Trim();
+
+            if (degree.Length == 0)
+            {
+                continue;
+            }
+
+            if (degrees.ContainsKey(degree))
+            {
+                degrees[degree] += 1;
+            }
+            else
+            {
+                degrees[degree] = 1;
+            }
         }
 
         return degrees;
@@ -67,7 +121,72 @@ public static class SetsAndMaps
     public static bool IsAnagram(string word1, string word2)
     {
         // TODO Problem 3 - ADD YOUR CODE HERE
-        return false;
+
+        if (word1 == null || word2 == null)
+        {
+            return false;
+        }
+        string clean1 = NormalizeForAnagram(word1);
+        string clean2 = NormalizeForAnagram(word2);
+
+        if (clean1.Length != clean2.Length)
+        {
+            return false;
+        }
+
+        var counts = new Dictionary<char, long>();
+        for (int i = 0; i < clean1.Length; i++)
+        {
+            char c = clean1[i];
+            if (counts.ContainsKey(c))
+            {
+                counts[c] += 1;
+            }
+            else
+            {
+                counts[c] = 1;
+            }
+        }
+
+        for (int i = 0; i < clean2.Length; i++)
+        {
+            char c = clean2[i];
+            if (!counts.ContainsKey(c))
+            {
+                return false;
+            }
+
+            counts[c] -= 1;
+            if (counts[c] < 0)
+            {
+                return false;
+            }
+        }
+        foreach (var kvp in counts)
+        {
+            if (kvp.Value != 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static string NormalizeForAnagram(string word)
+    {
+        var builder = new System.Text.StringBuilder(word.Length);
+        for (int i = 0; i < word.Length; i++)
+        {
+            char c = word[i];
+            if (c == ' ')
+            {
+                continue;
+            }
+
+            builder.Append(char.ToLowerInvariant(c));
+        }
+        return builder.ToString();
     }
 
     /// <summary>
@@ -101,6 +220,28 @@ public static class SetsAndMaps
         // on those classes so that the call to Deserialize above works properly.
         // 2. Add code below to create a string out each place a earthquake has happened today and its magitude.
         // 3. Return an array of these string descriptions.
-        return [];
+
+        var results = new List<string>();
+
+        if (featureCollection?.Features != null)
+        {
+            foreach (var feature in featureCollection.Features)
+            {
+                var props = feature?.Properties;
+                if (props == null)
+                {
+                    continue;
+                }
+
+                if (props.Place == null || props.Mag == null)
+                {
+                    continue;
+                }
+
+                results.Add($"{props.Place} - Mag {props.Mag}");
+            }
+        }
+
+        return results.ToArray();
     }
 }
